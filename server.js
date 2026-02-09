@@ -1,61 +1,100 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import morgan from 'morgan';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import cookieParser from 'cookie-parser';
-import connectDB from './config/db.js';
-// Load env vars
+import express from "express";
+import dotenv from "dotenv";
+import morgan from "morgan";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import cookieParser from "cookie-parser";
+
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/auth.routes.js";
+import errorHandler from "./middlewares/error.middleware.js";
+
 dotenv.config();
 
-// App init
 const app = express();
-
-// Environment
-const PORT = process.env.PORT || 5000;
-const NODE_ENV = process.env.NODE_ENV || 'development';
+const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || "development";
 
 // ==================
-// Global Middleware
+// CORS CONFIG
 // ==================
-app.use(express.json({ limit: '10mb' }));
+const allowedOrigins = [
+  "http://localhost:5173",
+  
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow Postman, server-to-server, cron jobs
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+// Apply CORS normally
+app.use(cors(corsOptions));
+
+// ✅ SAFE preflight handling (NO wildcard route)
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return cors(corsOptions)(req, res, next);
+  }
+  next();
+});
+
+// ==================
+// MIDDLEWARE
+// ==================
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors());
-app.use(helmet());
-app.use(compression());
-connectDB();
 
-// Logger (dev only)
-if (NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
+app.use(compression());
+
+if (NODE_ENV === "development") {
+  app.use(morgan("dev"));
 }
 
 // ==================
-// Routes
+// DATABASE
 // ==================
-app.get('/', (req, res) => {
+connectDB();
+
+// ==================
+// ROUTES
+// ==================
+app.get("/", (req, res) => {
   res.status(200).json({
-    status: 'success',
-    message: 'Server is running 🚀',
-    env: NODE_ENV
+    success: true,
+    message: "🚀 Server running",
   });
 });
 
-// MVC Routes
-// import sampleRoutes from './routes/sample.routes.js';
-// app.use('/api/sample', sampleRoutes);
+app.use("/api/v1/auth", authRoutes);
 
 // ==================
-// Error Handling
+// ERROR HANDLER
 // ==================
-import errorHandler from './middlewares/error.middleware.js';
 app.use(errorHandler);
 
 // ==================
-// Start Server
+// START SERVER
 // ==================
 app.listen(PORT, () => {
-  console.log(`🔥 Server running in ${NODE_ENV} mode on port ${PORT}`);
+  console.log(`🔥 Server running on port ${PORT}`);
 });
