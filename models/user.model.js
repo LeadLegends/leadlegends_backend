@@ -5,51 +5,36 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true,
-      minlength: 3,
+      trim: true
     },
-
     email: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
-      trim: true,
+      lowercase: true
     },
-
     password: {
       type: String,
-      // required: true,
-      minlength: 6,
-      select: false, // important for security so that password doesn't leak in queries by default
+      required: true
     },
-
     role: {
       type: String,
-      enum: ["admin", "manager", "sales"],
-      required: true,
-      default: "sales",
+      enum: ["admin", "manager", "member"],
+      default: "member"
     },
-
-    phone: {
+    companyName: {
+      type: String
+    },
+    timezone: {
       type: String,
-      trim: true,
+      default: "UTC"
     },
-
-    status: {
-      type: String,
-      enum: ["active", "inactive"],
-      default: "active",
-    },
-    
-    passwordResetToken: String,
-    passwordResetExpires: Date,
+    isEmailVerified: {
+      type: Boolean,
+      default: false
+    }
   },
-  {
-    timestamps: true, // adds createdAt & updatedAt
-  }
+  { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+export default mongoose.model("User", userSchema);

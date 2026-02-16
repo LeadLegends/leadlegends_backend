@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/LeadLegends/leadlegends_backend#readme",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
