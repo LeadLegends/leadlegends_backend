@@ -70,6 +70,9 @@ if (NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
+// Connect to database
+connectDB();
+
 // here are some changes for testing purpose to check if the changes are being tracked by git or not. I am adding some random text here to check the git tracking. This is just a test and will be removed later. I am also adding some more random text to make sure that the changes are significant enough to be tracked by git. This is just a test and will be removed later. 
 
 // ==================
@@ -100,3 +103,6 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`🔥 Server running on port ${PORT}`);
 });
+
+
+
